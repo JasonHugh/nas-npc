@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html xmlns:v-bind="http://www.w3.org/1999/xhtml" xmlns:v-on="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <title>星云拍卖行</title>
+    <link rel="stylesheet" href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="../css/bootstrap-datetimepicker.min.css">
+    <link rel="stylesheet" type="text/css" href="../css/core.css">
+    <style>
+        .panel-heading h2{font-weight: bold;}
+        .panel-body p{font-size: 15px;line-height: 30px;word-wrap: break-word;}
+        .nav-pills li{cursor: pointer}
+        .row{position: relative}
+        #error_box{margin-top: 30px;display: none}
+        #submit{display: block;margin:20px auto;width:200px}
+        .radio{text-align: center;}
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-inverse navbar-fixed-top" id="nav" role="navigation">
+    <div class="container">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-menu" aria-expanded="false">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <div class="navbar-header">
+                <a class="navbar-brand" href="/index.html">
+                    星云拍卖行
+                </a>
+            </div>
+        </div>
+        <div class="collapse navbar-collapse" id="navbar-menu">
+            <ul class="nav navbar-nav navbar-right">
+                <li><a href="/view/publish.html">发布拍卖</a></li>
+                <li><a href="/index.html">NAS拍卖</a></li>
+                <li><a href="/view/npcpage.html">NPC拍卖</a></li>
+                <li><a href="/view/myaccount.html">个人中心</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+    <div class="jumbotron" id="banner">
+    <div class="container">
+        <img src="/images/banner-text.png"/>
+    </div>
+</div>
+    <div class="container" id="app">
+        <form class="form-horizontal">
+        <div class="row">
+            <div class="col-xs-2 col-md-2"></div>
+            <div class="col-xs-8 col-md-8">
+              <div class="form-group">
+                <label class="col-sm-2 control-label"><span style="color: #f00;">*</span>拍品标题</label>
+                <div class="col-sm-10">
+                  <input type="text" class="form-control" id="title" placeholder="">
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="col-sm-2 control-label"><span style="color: #f00;">*</span>起拍价</label>
+                <div class="col-sm-10">
+                  <input type="number" class="form-control" id="initPrice" placeholder="">
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="col-sm-2 control-label">拍品图片地址</label>
+                <div class="col-sm-10">
+                  <input type="text" class="form-control" id="image" placeholder="">
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="col-sm-2 control-label"><span style="color: #f00;">*</span>结束时间</label>
+                <div class="col-sm-10">
+                  <input type="text" class="form-control" value="" id="endTime">
+                </div>
+              </div>
+              <div class="radio">
+                  <label class="radio-inline">
+                    <input type="radio" name="ptype" value="NAS" checked> NAS
+                  </label>
+                  <label class="radio-inline">
+                    <input type="radio" name="ptype" value="NPC"> NPC
+                  </label>
+              </div>
+
+                <button type="button" id="submit" class="btn btn-primary btn-lg" onclick="productSubmit()">提交</button>
+                <div class="alert alert-danger" id="error_box" role="alert">打 * 号的不能为空</div>
+            </div>
+
+            <div class="col-xs-2 col-md-2"></div>
+        </div>
+
+        </form>
+    </div>
+    <script src="../js/plugins/jquery-3.3.1.min.js"></script>
+    <script src="https://cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+    <script src="../js/plugins/bootstrap-datetimepicker.min.js"></script>
+    <script src="../js/plugins/vue.min.js"></script>
+    <script type="text/javascript" src="../js/plugins/nebulas.js"></script>
+    <script type="text/javascript" src="../js/plugins/nebPay.js"></script>
+    <script type="text/javascript" src="../js/common/util.js"></script>
+    <script type="text/javascript" src="../js/common/common-neb.js"></script>
+	<script type="text/javascript" src="../js/common/common-data.js"></script>
+    <script type="text/javascript">
+
+        $(function() {
+            getUserInfo();
+            $('#endTime').datetimepicker({
+                  startDate: new Date(new Date().getTime()+3600000),
+                  format: 'yyyy-mm-dd hh:00:00',
+                  autoclose: true,
+                  minView: 1
+              });
+        })
+        function productSubmit() {
+            console.log(curAddr);
+            if (curAddr != dappAddr){
+                alert("当前只支持管理员添加拍品");
+                return;
+            }
+            var title = $("#title").val();
+            var initPrice = $("#initPrice").val();
+            var imgUrl = $("#image").val();
+            var endTime = $("#endTime").val();
+            var ptype = $(".radio input:checked").val();
+            if (title && initPrice && endTime && ptype){
+                var data = {title:title,initPrice:initPrice,endTime:Math.floor(new Date(endTime).getTime()/1000),ptype:ptype,imgUrl:imgUrl};
+                addProduct(data);
+            }else {
+                $('#error_box').slideDown();
+                setTimeout(function() {
+                    $('#error_box').slideUp()
+                },1000)
+            }
+        }
+    </script>
+</body>
+</html>
