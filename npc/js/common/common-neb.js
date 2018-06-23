@@ -51,7 +51,7 @@ function queryData(addr, method, args, callback){
             if(resp.execute_err==""){
                 callback(JSON.parse(resp.result));
             }else{
-                alert(resp.execute_err);
+                // alert(resp.execute_err);
             }
         }).catch(function (err) {
             console.log(err);
@@ -80,7 +80,7 @@ function getPersonalData(self, addr){
                 self.account = JSON.parse(resp.result);
                 self.account.balance = balance;
             }else{
-                alert(resp.execute_err);
+                // alert(resp.execute_err);
             }
         }).catch(function (err) {
             console.log(err);
